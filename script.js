@@ -180,15 +180,47 @@ function clearAllPV(){
 window.addEventListener("DOMContentLoaded",displaySavedPV);
 
 /* === PDF === */
-async function saveAsPDF(){
-  const elem=document.querySelector('.paper');
-  const firstESI=document.querySelector('.esiNom')?.value.trim()||"PV";
-  const filename=`PV_${firstESI}.pdf`;
-  const opt={margin:[10,12,10,12],filename,image:{type:'jpeg',quality:0.98},
-    html2canvas:{scale:2,useCORS:true},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
-  await html2pdf().set(opt).from(elem).save();
+async function saveAsPDF() {
+  const elem = document.querySelector('.paper');
+  const firstESI = document.querySelector('.esiNom')?.value.trim() || "PV";
+  const filename = `PV_${firstESI}.pdf`;
+
+  // S'assurer que le PV est généré
+  if (!document.getElementById('sheet').innerText.trim()) {
+    alert("⚠️ Générez d'abord le PV avant de l'enregistrer en PDF !");
+    return;
+  }
+
+  // Temporisation pour que le DOM soit bien stable
+  await new Promise(r => setTimeout(r, 400));
+
+  // Duplication propre du contenu dans une div invisible pour éviter flex/overflow
+  const clone = elem.cloneNode(true);
+  clone.style.position = "absolute";
+  clone.style.left = "-9999px";
+  clone.style.top = "0";
+  clone.style.width = "210mm";
+  clone.style.background = "#fff";
+  document.body.appendChild(clone);
+
+  const opt = {
+    margin: [10, 12, 10, 12],
+    filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  try {
+    await html2pdf().set(opt).from(clone).save();
+  } catch (err) {
+    console.error("Erreur PDF:", err);
+    alert("Une erreur est survenue pendant la génération du PDF.");
+  }
+
+  clone.remove();
 }
+
 
 /* === MAIL === */
 async function shareByEmail(){
