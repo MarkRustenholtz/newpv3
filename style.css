@@ -62,7 +62,7 @@ input, select {
   text-align: center;
 }
 
-.logo { width: 70px; height: auto; margin-bottom: 8px; }
+.logo { width: 110px; height: auto; margin-bottom: 8px; }
 .brand { font-weight: 800; text-transform: uppercase; line-height: 1.2; }
 .pv-no { font-weight: 700; margin-top: 1rem; }
 .pv-no em { border-bottom: 2px solid #000; padding: 0 .8rem; font-style: normal; }
@@ -103,3 +103,4 @@ input, select {
   box-shadow: 0 0 25px rgba(0,0,0,0.3);
 }
 #previewContent { max-height: 80vh; overflow-y: auto; padding: 1rem; }
+
