@@ -21,7 +21,7 @@
     <button class="btn" onclick="shareByEmail()">✉️ Envoyer par mail</button>
   </div>
 
-  <div class="wrapper">
+  <div class="wrapper" id="mainForm">
     <h1>Procès-verbal d’interpellation administrative</h1>
 
     <!-- Infos rédacteur -->
@@ -112,10 +112,9 @@
           </div>
         </aside>
         <main class="right-col">
-  <h2 class="pv-title">PROCÈS-VERBAL D’INTERPELLATION ADMINISTRATIVE</h2>
-  <div id="sheet"><em>Génère le PV ici...</em></div>
-</main>
-
+          <h2 class="pv-title">PROCÈS-VERBAL D’INTERPELLATION ADMINISTRATIVE</h2>
+          <div id="sheet"><em>Génère le PV ici...</em></div>
+        </main>
       </div>
     </section>
 
@@ -125,6 +124,14 @@
       <div id="savedPVList"></div>
       <button class="btn btn-danger" onclick="clearAllPV()">🗑️ Effacer tous les PV</button>
     </section>
+  </div>
+
+  <!-- Page de prévisualisation -->
+  <div id="showPage" class="showpage hidden">
+    <div class="show-inner">
+      <button class="btn" onclick="closeShowPage()">⬅️ Retour</button>
+      <div id="previewContent"></div>
+    </div>
   </div>
 </body>
 </html>

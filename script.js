@@ -2,7 +2,13 @@
 function toText(id){const e=document.getElementById(id);return e?e.value.trim():"";}
 function toggleBlock(h){const b=h.nextElementSibling;b.style.display=b.style.display==="none"?"block":"none";}
 function deleteBlock(e,btn){e.stopPropagation();btn.closest('.dynamic-block').remove();}
-function getFallbackLogo(){return `<svg class="logo" viewBox='0 0 200 140'><rect width='66.6' height='140' fill='#0055A4'/><rect x='66.6' width='66.6' height='140' fill='#fff'/><rect x='133.2' width='66.8' height='140' fill='#EF4135'/></svg>`;}
+function getFallbackLogo(){
+  return `<svg class="logo" viewBox='0 0 200 140'>
+    <rect width='66.6' height='140' fill='#0055A4'/>
+    <rect x='66.6' width='66.6' height='140' fill='#fff'/>
+    <rect x='133.2' width='66.8' height='140' fill='#EF4135'/>
+  </svg>`;
+}
 
 /* === BLOCS DYNAMIQUES === */
 let assistantCount=1, esiCount=1;
@@ -57,16 +63,37 @@ function addESI(){
 function dateFrLitterale(dateStr,heureStr){
   if(!dateStr) return "";
   const d=new Date(dateStr+"T12:00:00");
+  if(isNaN(d)) return "";
   const mois=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"][d.getMonth()];
   const j=d.getDate(), a=d.getFullYear();
   const anTxt={2024:"deux mille vingt-quatre",2025:"deux mille vingt-cinq",2026:"deux mille vingt-six"}[a]||`deux mille ${a-2000}`;
   let heureTxt="";
-  if(heureStr){const[h,m]=(heureStr||"").split(":");heureTxt=` à ${parseInt(h)}h${m?m:""}`;}
+  if(heureStr){const[h,m]=(heureStr||"").split(":");if(h)heureTxt=` à ${parseInt(h)}h${m?m:""}`;}
   return`L’an ${anTxt}, le ${j} ${mois}${heureTxt}`;
 }
 
+/* === SAUVEGARDE FORMULAIRE === */
+function saveFormData(){
+  const data={};
+  document.querySelectorAll('input, select').forEach(el=>{
+    if(el.id) data[el.id]=el.value;
+  });
+  localStorage.setItem('pv_form',JSON.stringify(data));
+}
+function loadFormData(){
+  const saved=JSON.parse(localStorage.getItem('pv_form')||"{}");
+  for(const [id,val] of Object.entries(saved)){
+    const el=document.getElementById(id);
+    if(el) el.value=val;
+  }
+}
+document.addEventListener('input',()=>{saveFormData();});
+
 /* === GÉNÉRATION DU PV === */
 function generatePV(){
+  // Sauvegarde du formulaire
+  saveFormData();
+
   const grade=toText('agentGrade'), nom=toText('agentNom'), qual=toText('agentQual'),
   datepv=toText('datepv'), hRedac=toText('heureRedac'), lieu=toText('lieu'),
   hCtrl=toText('heureControle'), hPAF=toText('heureContactPAF'), hDep=toText('heureDepart'),
@@ -103,7 +130,7 @@ function generatePV(){
     html+=`<h3>Lors de la vérification d’identité ${pluriel?"des individus":"de l’individu"} :</h3>`;
     esiList.forEach(e=>{
       let genre="L’intéressé(e)"; if(e.sexe==="F") genre="L’intéressée"; else if(e.sexe==="M") genre="L’intéressé";
-      let naissTxt=""; if(e.naiss){const d=new Date(e.naiss); naissTxt=`né${e.sexe==="F"?"e":""} le ${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;}
+      let naissTxt=""; if(e.naiss){const d=new Date(e.naiss); if(!isNaN(d)) naissTxt=`né${e.sexe==="F"?"e":""} le ${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;}
       const nomnat = `${e.nom||""}${naissTxt?`, ${naissTxt}`:""}${e.nat?`, de nationalité ${e.nat}`:""}`;
       const line = (e.doc && e.doc.toLowerCase()!=="aucun") ?
         `${genre} ${nomnat}, a présenté ${e.doc.toLowerCase()}${e.statut?`, ${e.statut}`:""}.` :
@@ -137,18 +164,23 @@ function generatePV(){
   // noms ESI colonne gauche
   const leftNames=esiList.map(e=>{
     const date=e.naiss?new Date(e.naiss):null;
-    const dn=date?` (${String(date.getDate()).padStart(2,"0")}/${String(date.getMonth()+1).padStart(2,"0")}/${date.getFullYear()})`:"";
+    const dn=date&&!isNaN(date)?` (${String(date.getDate()).padStart(2,"0")}/${String(date.getMonth()+1).padStart(2,"0")}/${date.getFullYear()})`:"";
     return `${e.nom||""}${dn}`;
   }).join("<br>");
   document.getElementById("esiListLeft").innerHTML=leftNames;
 
-  // sauvegarde
-  const savedPV={id:Date.now(),date:new Date().toLocaleString("fr-FR"),redacteur:nom,contenu:html};
-  const pvList=JSON.parse(localStorage.getItem("pv_list")||"[]"); pvList.push(savedPV);
-  localStorage.setItem("pv_list",JSON.stringify(pvList)); displaySavedPV();
+  // sauvegarde PV complet
+  const savedPV={id:Date.now(),date:new Date().toLocaleString("fr-FR"),redacteur:nom,contenu:html,form:JSON.parse(localStorage.getItem('pv_form')||"{}")};
+  const pvList=JSON.parse(localStorage.getItem("pv_list")||"[]");
+  pvList.push(savedPV);
+  localStorage.setItem("pv_list",JSON.stringify(pvList));
+  displaySavedPV();
+
+  // ouverture en mode prévisualisation
+  openShowPage(html);
 }
 
-/* === GESTION DES PV SAUVEGARDÉS === */
+/* === AFFICHAGE PV SAUVEGARDÉS === */
 function displaySavedPV(){
   const list=JSON.parse(localStorage.getItem("pv_list")||"[]");
   const el=document.getElementById("savedPVList");
@@ -164,8 +196,11 @@ function displaySavedPV(){
 function loadPV(id){
   const list=JSON.parse(localStorage.getItem("pv_list")||"[]");
   const pv=list.find(x=>x.id===id); if(!pv) return alert("PV introuvable.");
+  // rechargement des champs
+  localStorage.setItem('pv_form',JSON.stringify(pv.form||{}));
+  loadFormData();
   document.getElementById('sheet').innerHTML=pv.contenu;
-  window.scrollTo({top:0,behavior:"smooth"});
+  openShowPage(pv.contenu);
 }
 function deletePV(id){
   if(!confirm("Supprimer ce PV ?"))return;
@@ -177,50 +212,36 @@ function clearAllPV(){
   if(!confirm("Tout effacer ?"))return;
   localStorage.removeItem("pv_list"); displaySavedPV();
 }
-window.addEventListener("DOMContentLoaded",displaySavedPV);
 
-/* === PDF === */
-async function saveAsPDF() {
-  const elem = document.querySelector('.paper');
-  const firstESI = document.querySelector('.esiNom')?.value.trim() || "PV";
-  const filename = `PV_${firstESI}.pdf`;
-
-  // S'assurer que le PV est généré
-  if (!document.getElementById('sheet').innerText.trim()) {
-    alert("⚠️ Générez d'abord le PV avant de l'enregistrer en PDF !");
-    return;
-  }
-
-  // Temporisation pour que le DOM soit bien stable
-  await new Promise(r => setTimeout(r, 400));
-
-  // Duplication propre du contenu dans une div invisible pour éviter flex/overflow
-  const clone = elem.cloneNode(true);
-  clone.style.position = "absolute";
-  clone.style.left = "-9999px";
-  clone.style.top = "0";
-  clone.style.width = "210mm";
-  clone.style.background = "#fff";
-  document.body.appendChild(clone);
-
-  const opt = {
-    margin: [10, 12, 10, 12],
-    filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-
-  try {
-    await html2pdf().set(opt).from(clone).save();
-  } catch (err) {
-    console.error("Erreur PDF:", err);
-    alert("Une erreur est survenue pendant la génération du PDF.");
-  }
-
-  clone.remove();
+/* === PAGE DE PRÉVISUALISATION === */
+function openShowPage(html){
+  const show=document.getElementById('showPage');
+  const content=document.getElementById('previewContent');
+  content.innerHTML=html;
+  show.classList.remove('hidden');
+}
+function closeShowPage(){
+  document.getElementById('showPage').classList.add('hidden');
+  document.getElementById('previewContent').innerHTML="";
 }
 
+/* === PDF === */
+async function saveAsPDF(){
+  const elem=document.querySelector('.paper');
+  const firstESI=document.querySelector('.esiNom')?.value.trim()||"PV";
+  const filename=`PV_${firstESI}.pdf`;
+  if(!document.getElementById('sheet').innerText.trim()){
+    alert("⚠️ Générez d'abord le PV avant de l'enregistrer !");
+    return;
+  }
+  await new Promise(r=>setTimeout(r,400));
+  const clone=elem.cloneNode(true);
+  clone.style.position="absolute"; clone.style.left="-9999px"; clone.style.width="210mm"; clone.style.background="#fff";
+  document.body.appendChild(clone);
+  const opt={margin:[10,12,10,12],filename,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
+  try{await html2pdf().set(opt).from(clone).save();}catch(err){alert("Erreur PDF.");}
+  clone.remove();
+}
 
 /* === MAIL === */
 async function shareByEmail(){
@@ -228,11 +249,7 @@ async function shareByEmail(){
     const elem=document.querySelector('.paper');
     const firstESI=document.querySelector('.esiNom')?.value.trim()||"PV";
     const filename=`PV_${firstESI}.pdf`;
-    const worker=html2pdf().set({
-      margin:[10,12,10,12],
-      html2canvas:{scale:2,useCORS:true},
-      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
-    }).from(elem).toPdf();
+    const worker=html2pdf().set({margin:[10,12,10,12],html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(elem).toPdf();
     const pdf=await worker.get('pdf');
     const blob=pdf.output('blob');
     const file=new File([blob],filename,{type:'application/pdf'});
@@ -245,6 +262,12 @@ async function shareByEmail(){
   const body=encodeURIComponent(document.getElementById('sheet').innerText);
   location.href=`mailto:?subject=${subject}&body=${body}`;
 }
+
+/* === INITIALISATION === */
+window.addEventListener("DOMContentLoaded",()=>{
+  loadFormData();
+  displaySavedPV();
+});
 
 /* === SERVICE WORKER === */
 if('serviceWorker' in navigator){
