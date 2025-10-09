@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>App PV — Gendarmerie</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#003366" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script defer src="script.js"></script>
+</head>
+
+<body>
+  <div class="toolbar">
+    <button class="btn btn-primary" onclick="generatePV()">📝 Générer le PV</button>
+    <button class="btn btn-success" onclick="saveAsPDF()">📄 Enregistrer en PDF</button>
+    <button class="btn" onclick="shareByEmail()">✉️ Envoyer par mail</button>
+  </div>
+
+  <div class="wrapper" id="mainForm">
+    <h1>Procès-verbal d’interpellation administrative</h1>
+
+    <!-- Infos rédacteur -->
+    <section>
+      <h2>Rédacteur</h2>
+      <div class="grid2">
+        <input id="agentGrade" placeholder="Grade">
+        <input id="agentNom" placeholder="Nom du rédacteur">
+        <input id="agentQual" placeholder="Qualité (APJA, APJ, OPJ...)">
+        <input id="pafLieu" placeholder="Brigade PAF de destination">
+      </div>
+    </section>
+
+    <!-- Lieu et horaires -->
+    <section>
+      <h2>Lieu & horaires</h2>
+      <div class="grid4">
+        <input id="datepv" type="date">
+        <input id="heureRedac" type="time" placeholder="Heure rédaction">
+        <input id="lieu" placeholder="Lieu du contrôle">
+        <input id="vehicule" placeholder="Type véhicule">
+        <input id="marque" placeholder="Marque">
+        <input id="immat" placeholder="Immatriculation">
+        <input id="heureControle" type="time" placeholder="Heure contrôle">
+        <input id="heureContactPAF" type="time" placeholder="Heure contact PAF">
+        <input id="heureDepart" type="time" placeholder="Heure départ">
+        <input id="heureRemise" type="time" placeholder="Heure remise">
+      </div>
+    </section>
+
+    <!-- Assistants -->
+    <section id="assistantsContainer">
+      <h2>Assistants ESR</h2>
+      <div class="assistant-block dynamic-block">
+        <div class="block-header" onclick="toggleBlock(this)">
+          <span>👮 Assistant 1</span>
+          <button class="delete-btn" onclick="deleteBlock(event,this)">🗑️</button>
+        </div>
+        <div class="block-body">
+          <div class="grid4">
+            <input class="assistantGrade" placeholder="Grade">
+            <input class="assistantNom" placeholder="Nom">
+            <input class="assistantPrenom" placeholder="Prénom">
+            <input class="assistantQual" placeholder="Qualité (APJA, APJ...)">
+          </div>
+        </div>
+      </div>
+      <button class="btn" onclick="addAssistant()">➕ Ajouter un assistant</button>
+    </section>
+
+    <!-- ESI -->
+    <section id="esiContainer">
+      <h2>Personnes interpellées (ESI)</h2>
+      <div class="esi-block dynamic-block">
+        <div class="block-header" onclick="toggleBlock(this)">
+          <span>👤 ESI 1</span>
+          <button class="delete-btn" onclick="deleteBlock(event,this)">🗑️</button>
+        </div>
+        <div class="block-body">
+          <div class="grid6">
+            <input class="esiNom" placeholder="Nom complet">
+            <input class="esiNaiss" type="date" placeholder="Naissance">
+            <input class="esiNat" placeholder="Nationalité">
+            <select class="esiSexe">
+              <option value="">Sexe</option>
+              <option value="M">Masculin</option>
+              <option value="F">Féminin</option>
+            </select>
+            <input class="esiDoc" placeholder="Document (passeport, aucun...)">
+            <input class="esiStatut" placeholder="Statut (valide, périmé, sans visa...)">
+          </div>
+        </div>
+      </div>
+      <button class="btn" onclick="addESI()">➕ Ajouter un ESI</button>
+    </section>
+
+    <!-- Feuille PV -->
+    <section class="paper">
+      <div class="paper-inner">
+        <aside class="left-rail">
+          <div class="top">
+            <img class="logo" src="logo-rf.png" alt="Logo RF" onerror="this.outerHTML=getFallbackLogo();" />
+            <div class="brand">GENDARMERIE<br>NATIONALE</div>
+          </div>
+          <div class="center">
+            <div class="pv-no">N° PV <em>_________</em></div>
+            <div id="esiListLeft"></div>
+          </div>
+        </aside>
+        <main class="right-col">
+          <h2 class="pv-title">PROCÈS-VERBAL D’INTERPELLATION ADMINISTRATIVE</h2>
+          <div id="sheet"><em>Génère le PV ici...</em></div>
+        </main>
+      </div>
+    </section>
+
+    <!-- Sauvegardes -->
+    <section>
+      <h2>📁 PV sauvegardés</h2>
+      <div id="savedPVList"></div>
+      <button class="btn btn-danger" onclick="clearAllPV()">🗑️ Effacer tous les PV</button>
+    </section>
+  </div>
+
+  <!-- Page de prévisualisation -->
+  <div id="showPage" class="showpage hidden">
+    <div class="show-inner">
+      <button class="btn" onclick="closeShowPage()">⬅️ Retour</button>
+      <div id="previewContent"></div>
+    </div>
+  </div>
+</body>
+</html>
