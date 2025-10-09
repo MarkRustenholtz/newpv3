@@ -72,7 +72,7 @@ input, select {
 }
 
 }
-.logo { width: 110px; height: auto; margin-bottom: .6rem; }
+.logo { width: 70px; height: auto; margin-bottom: 8px; }
 .brand { font-weight: 800; text-transform: uppercase; line-height: 1.2; }
 .pv-no { font-weight: 700; margin-top: 1rem; }
 .pv-no em { border-bottom: 2px solid #000; padding: 0 .8rem; font-style: normal; }
