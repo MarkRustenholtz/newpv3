@@ -1,4 +1,4 @@
-const CACHE_NAME = "app-pv-v2";
+const CACHE_NAME = "app-pv-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -39,4 +39,5 @@ self.addEventListener("fetch", e => {
     )
   );
 });
+
 
