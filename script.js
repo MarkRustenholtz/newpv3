@@ -120,7 +120,7 @@ function generatePV(){
   const nb=esiList.length, pluriel=nb>1;
 
   let html=`<p>Nous, ${grade} ${nom}, militaire de la gendarmerie nationale, agissant en qualité d’${qual||"agent de police judiciaire adjoint"}, revêtu de notre uniforme réglementaire et porteur de nos insignes distinctifs de fonction, conformément aux articles 20, 21-1 et 21-2 du code de procédure pénale`;
-  if(assistants.length) html+=`, assisté${assistants.length>1?"s":""} de ${assistants.join("; ")}`;
+  if(assistants.length) html+=`, assisté${assistants.length>1?"s":""} du ${assistants.join("; ")}`;
   html+=`, avons rédigé le présent procès-verbal.</p>`;
 
   html+=`<p>${dateFrLitterale(datepv,hRedac)}, alors que nous étions engagés dans un dispositif de contrôle fixe de la circulation, mis en place dans le cadre de la lutte contre l’immigration irrégulière, nous avons procédé au contrôle du véhicule ${veh} ${marq} immatriculé ${imm}, circulant sur ${lieu}.</p>`;
@@ -148,7 +148,7 @@ function generatePV(){
   <p>Après en avoir immédiatement rendu compte à notre hiérarchie, celle-ci nous a mis en relation avec l’officier de police judiciaire de la Police aux Frontières (PAF) territorialement compétent, contacté à ${hPAF||"—"}.</p>
   <p>Ce dernier, après examen des situations administratives respectives de ${nb>1?"des "+ref:"l’"+ref}, a décidé ${quPronom} devait être ${condu} à la brigade de la PAF de ${paf||"—"} afin d’y être ${entendu} et de faire l’objet des vérifications administratives relatives à ${droit} droit au séjour.</p>
   <p>Le départ du lieu de contrôle a eu lieu à ${hDep||"—"}, et nous sommes arrivés à la brigade de la PAF à ${hRem||"—"}, où ${nb>1?"les "+ref+" ont été "+remis:"l’"+ref+" a été "+remis} à l’officier de police judiciaire de service.</p>
-  <p>Le présent procès-verbal est dressé pour rendre compte de l’interpellation administrative ${pluriel?"des "+ref:"de l’"+ref} et de ${pluriel?"leur":"son"} remise à l’autorité compétente.</p>`;
+  <p>Le présent procès-verbal est dressé pour rendre compte de l’interpellation administrative ${pluriel?"des "+ref:"de l’"+ref} et de ${pluriel?"leur":"sa"} remise à l’autorité compétente.</p>`;
 
   // signatures
   const assistantsText = assistants.length>1?"Les assistants":assistants.length===1?"L’assistant":"L’assistant";
@@ -226,7 +226,7 @@ function closeShowPage(){
 }
 
 /* === PDF === */
-async function saveAsPDF(){
+/*async function saveAsPDF(){
   const elem=document.querySelector('.paper');
   const firstESI=document.querySelector('.esiNom')?.value.trim()||"PV";
   const filename=`PV_${firstESI}.pdf`;
@@ -241,6 +241,62 @@ async function saveAsPDF(){
   const opt={margin:[10,12,10,12],filename,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
   try{await html2pdf().set(opt).from(clone).save();}catch(err){alert("Erreur PDF.");}
   clone.remove();
+}*/
+/* === PDF (version complète, avec colonne gauche + sans page blanche) === */
+async function saveAsPDF(){
+  const elem = document.querySelector('.paper');
+  const firstESI = document.querySelector('.esiNom')?.value.trim() || "PV";
+  const filename = `PV_${firstESI}.pdf`;
+
+  if(!document.getElementById('sheet').innerText.trim()){
+    alert("⚠️ Générez d'abord le PV avant de l'enregistrer !");
+    return;
+  }
+
+  try {
+    // Message de chargement
+    const loading = document.createElement('div');
+    loading.textContent = "💾 Génération du PDF...";
+    loading.style.position = "fixed";
+    loading.style.top = "50%";
+    loading.style.left = "50%";
+    loading.style.transform = "translate(-50%, -50%)";
+    loading.style.background = "#003366";
+    loading.style.color = "white";
+    loading.style.padding = "15px 25px";
+    loading.style.borderRadius = "8px";
+    loading.style.fontWeight = "bold";
+    loading.style.zIndex = "9999";
+    document.body.appendChild(loading);
+
+    const opt = {
+      margin: [10, 12, 10, 12],
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // 🧩 Capture toute la feuille (colonne gauche + droite)
+    const pdf = await html2pdf().set(opt).from(elem).toPdf().get('pdf');
+    const blob = pdf.output('blob');
+    const file = new File([blob], filename, { type: 'application/pdf' });
+
+    // 🔹 Téléchargement local (pas d’onglet blanc)
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    loading.remove();
+    alert("✅ PDF complet enregistré dans vos téléchargements !");
+  } catch (err) {
+    console.error("Erreur PDF:", err);
+    alert("⚠️ Erreur pendant la génération du PDF.");
+  }
 }
 
 /* === MAIL === */

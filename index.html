@@ -19,6 +19,8 @@
     <button class="btn btn-primary" onclick="generatePV()">📝 Générer le PV</button>
     <button class="btn btn-success" onclick="saveAsPDF()">📄 Enregistrer en PDF</button>
     <button class="btn" onclick="shareByEmail()">✉️ Envoyer par mail</button>
+	
+
   </div>
 
   <div class="wrapper" id="mainForm">
@@ -30,6 +32,12 @@
       <div class="grid2">
         <input id="agentGrade" placeholder="Grade">
         <input id="agentNom" placeholder="Nom du rédacteur">
+		<select id="agentSexe">
+  <option value="">Sexe</option>
+  <option value="M">Masculin</option>
+  <option value="F">Féminin</option>
+</select>
+
         <input id="agentQual" placeholder="Qualité (APJA, APJ, OPJ...)">
         <input id="pafLieu" placeholder="Brigade PAF de destination">
       </div>
@@ -39,16 +47,16 @@
     <section>
       <h2>Lieu & horaires</h2>
       <div class="grid4">
-        <input id="datepv" type="date"><label>Date du PV<label>
-        <input id="heureRedac" type="time" placeholder="Heure rédaction">
+        <label>Date du PV<label><input id="datepv" type="date">
+        <label>Heure du PV<label><input id="heureRedac" type="time" placeholder="Heure rédaction">
         <input id="lieu" placeholder="Lieu du contrôle">
         <input id="vehicule" placeholder="Type véhicule">
         <input id="marque" placeholder="Marque">
         <input id="immat" placeholder="Immatriculation">
-        <input id="heureControle" type="time" placeholder="Heure contrôle"><label>Heure en tête de pv<label>
-        <input id="heureContactPAF" type="time" placeholder="Heure contact PAF"><label>Heure appel PAF<label>
-        <input id="heureDepart" type="time" placeholder="Heure départ"><label>Heure de translation ESI<label>
-        <input id="heureRemise" type="time" placeholder="Heure remise"><label>Heure de remise ESI à la PAF<label>
+        <label>Heure début du contrôle<label><input id="heureControle" type="time" placeholder="Heure contrôle">
+        <label>Heure appel PAF<label><input id="heureContactPAF" type="time" placeholder="Heure contact PAF">
+        <label>Heure de translation ESI<label><input id="heureDepart" type="time" placeholder="Heure départ">
+        <label>Heure de remise ESI à la PAF<label><input id="heureRemise" type="time" placeholder="Heure remise">
       </div>
     </section>
 
@@ -83,7 +91,7 @@
         <div class="block-body">
           <div class="grid6">
             <input class="esiNom" placeholder="Nom complet">
-            <input class="esiNaiss" type="date" placeholder="Naissance"><label>Date de naissance<label>
+            <label>Date de naissance<label><input class="esiNaiss" type="date" placeholder="Naissance">
             <input class="esiNat" placeholder="Nationalité">
             <select class="esiSexe">
               <option value="">Sexe</option>
